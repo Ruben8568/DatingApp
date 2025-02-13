@@ -15,7 +15,7 @@ import { NgxSpinnerComponent } from 'ngx-spinner';
 export class AppComponent implements OnInit {
 
   
-  private AccountService = inject(AccountService);
+  private accountService = inject(AccountService);
 
 
   ngOnInit(): void {
@@ -27,7 +27,7 @@ this.setCurrentUser();
     const userString = localStorage.getItem('user');
     if(!userString) return;
     const user = JSON.parse(userString);
-    this.AccountService.currentUser.set(user);
+    this.accountService.setCurrentUser(user);
   }
 
 
