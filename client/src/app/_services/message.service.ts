@@ -1,3 +1,4 @@
+import { BusyService } from './busy.service';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
@@ -16,11 +17,13 @@ export class MessageService {
   baseUrl = environment.apiUrl;
   hubUrl = environment.hubsUrl;
   private http = inject(HttpClient);
+  private BusyService = inject(BusyService);
   hubConnection?: HubConnection;
   paginatedResult = signal<PaginatedResult<Message[]> | null>(null);
   messageThread = signal<Message[]>([]);
 
   createHubConnection(user: User, otherUsername: string){
+    this.BusyService.busy();
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(this.hubUrl + 'message?user=' + otherUsername, {
         accessTokenFactory: () => user.token
@@ -28,7 +31,9 @@ export class MessageService {
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection.start().catch(error => console.log(error));
+    this.hubConnection.start()
+      .catch(error => console.log(error))
+      .finally(() => this.BusyService.idle());
 
     this.hubConnection.on('ReceiveMessageThread', messages => {
       this.messageThread.set(messages);
